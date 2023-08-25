@@ -13,9 +13,9 @@ typedef enum command {
 
 
 // read input
-char * getInput(char *input)
+char * getInput()
 {
-    char *theInputString = (char *)malloc(sizeof(char) * 10);  
+    char *theInputString = (char *)malloc(sizeof(char) * 50);  
     if(theInputString == NULL) return NULL; 
     char *sIn = theInputString;
     while((*sIn++ = getchar()) != '\n');
@@ -71,17 +71,27 @@ command commandType(char *userInputString)
     return ERR; 
 }
 // file creation
-FILE * newFile(char *fileName, char *userInputString)
+void createFile(char *fileName)
 {
-    if(commandType(userInputString) == CREATE)
+    FILE *newFile; 
+    if((newFile = fopen(fileName, "w")) == NULL) printf("File could not be created.\n"); 
+    else
     {
-        return fopen(fileName, "w"); 
+        printf("File [%s] has been created.\n", fileName); 
+        printf("To file ->"); 
+        char *userIn = getInput(); 
+        fputs(userIn, newFile); 
+        fclose(newFile);
     }
 }
-
-
-
-
+// file deletion
+void deleteFile(char *fileName)
+{
+    if(remove(fileName))
+    {
+        printf("Could not delete that file.\n"); 
+    }
+}
 
 
 #endif

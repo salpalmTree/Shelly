@@ -6,9 +6,6 @@
 
 
 int main()
-{ 
-    char *myString; 
-    printf("%s", getInput(myString)); 
-
+{
     return 0; 
 }

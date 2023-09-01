@@ -4,14 +4,19 @@
 #include <strings.h>
 #include "../include/shelly_func.h"
 
-bool running = true;  
-
 int main()
 {
-    printf("Welcome to Shelly... a super basic file shell thing.\n");  
+    addDir(&head, getInput());
+    addDir(&head, getInput()); 
+    addDir(&head, getInput()); 
+    addDir(&head, getInput());  
+    printDir(head); 
+
+    printf("Welcome to Shelly... a super basic file shell thing.\n");   
     FILE *userFile; 
     char *userInputCommand; 
     char *userInput; 
+
     do
     {
         displayChoices();
@@ -24,7 +29,7 @@ int main()
         break;
         case READ:
             userInput = getInput(); 
-            readFile(userInput, userFile);
+            readFile(userInput);
         break; 
         case EDIT:
             userInput = getInput(); 

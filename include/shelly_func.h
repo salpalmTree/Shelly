@@ -98,10 +98,11 @@ FILE * createFile(char *fileName)
     {
         printf("A file has been created %s\n", fileName); 
         printf("To file ->"); 
-        free(fileName); // Might free() too much
+        //free(fileName); // Might free() too much
         char *userIn = getInput(); 
         fputs(userIn, newFile); 
         fclose(newFile);
+        free(fileName); 
         free(userIn); 
         return newFile; 
     }
@@ -179,10 +180,6 @@ void add_Dir(dirNode **head, char *dirName)
         dirToAdd->dirName = dirName; 
         dirToAdd->next = *head; 
         dirToAdd->prev = NULL;
-        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
-        {
-            dirToAdd->files[i].fileName = "xemptyx"; 
-        }
     }
     else
     {
@@ -190,6 +187,10 @@ void add_Dir(dirNode **head, char *dirName)
         dirToAdd->next = *head; 
         dirToAdd->prev = (*head)->prev; 
          
+    }
+    for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+    {
+        dirToAdd->files[i].fileName = "xemptyx"; 
     }
     *head = dirToAdd;
 }
@@ -204,26 +205,36 @@ dirNode * lookup_Dir(dirNode *head, char *dirName)
         }
         head = head->next; 
     }
-    printf("Error finding that Direcotry."); 
+    printf("Error finding that Direcotry.\n"); 
     return NULL; 
 }
 
 void add_File_To_Dir(dirNode *head, char *fileName)
 {
-    while(head != NULL)
+    bool createdFile = false; 
+    if(head == NULL)
     {
-        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+        printf("Directory not found.\n");
+    }
+    else
+    {
+        while(!createdFile)
         {
-            if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
+            for(int i = 0; i < MAX_FILE_AMOUNT; i++)
             {
-                FILE *newFile = createFile(fileName);
-                if(!newFile)
+                if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
                 {
-                    printf("ERR: File could not be created"); 
-                }
-                else
-                {
-                    printf("File created in %s directory as %s \n", head->dirName, head->files[i].fileName); 
+                    if(!(head->files[i].file = createFile(fileName)))
+                    {
+                        printf("File could not be created.\n"); 
+                    }
+                    else
+                    {
+                        head->files[i].fileName = fileName; 
+                        printf("File created in %s directory as %s \n", head->dirName, head->files[i].fileName); 
+                        createdFile = true; 
+                        break; 
+                    }
                 }
             }
         }
@@ -232,6 +243,7 @@ void add_File_To_Dir(dirNode *head, char *fileName)
 
 void ls_Dir(dirNode *head)
 {
+    int i = 0; 
     int fileCount = 0; 
     if(head == NULL)
     {
@@ -244,21 +256,14 @@ void ls_Dir(dirNode *head)
         {
             printf("%s.dir\n", head->next->dirName); 
         }
-        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+        while(i < MAX_FILE_AMOUNT)
         {
-            if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
+            if((strcmp(head->files[i].fileName, "xemptyx")) != 0)
             {
-                break; 
-            }
-            else
-            {
-                printf("%s\n", head->files[i].fileName); 
+                printf("%s\n", head->files[i].fileName);
                 fileCount++; 
             }
-        }
-        if(fileCount == 0)
-        {
-            printf("No files in Directory.\n"); 
+            i++; 
         }
     }
 }

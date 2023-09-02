@@ -7,9 +7,11 @@
 int main()
 {
     add_Dir(&head, getInput());
-    ls_Dir(head); 
-    add_File_To_Dir(head, getInput()); 
-    ls_Dir(head); 
+    add_Dir(&head, getInput()); 
+    add_Dir(&head, getInput()); 
+    ls_Dir(lookup_Dir(head, getInput())); 
+    //add_File_To_Dir(lookup_Dir(head, getInput()), getInput()); 
+    //ls_Dir(head);
 
     printf("Welcome to Shelly... a super basic file shell thing.\n");   
     FILE *userFile; 

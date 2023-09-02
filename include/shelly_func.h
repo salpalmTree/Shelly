@@ -98,7 +98,7 @@ FILE * createFile(char *fileName)
     {
         printf("A file has been created %s\n", fileName); 
         printf("To file ->"); 
-        free(fileName); 
+        free(fileName); // Might free() too much
         char *userIn = getInput(); 
         fputs(userIn, newFile); 
         fclose(newFile);

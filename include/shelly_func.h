@@ -3,7 +3,7 @@
 #define SHELLY_GL_BUFSIZE 64
 #define MAX_FILE_AMOUNT 10
 
-bool running = true;  
+bool running = false;  
 typedef enum command {
     EXT = 0,
     DELETE,
@@ -26,38 +26,6 @@ typedef struct dirNode {
 }dirNode; 
 
 dirNode *head = NULL; 
-
-void addDir(dirNode **head, char *dirName)
-{
-    dirNode *dirToAdd = (dirNode*)malloc(sizeof(dirNode)); 
-    if(!dirToAdd)
-    {
-        printf("Error creating Directory\n"); 
-        free(dirToAdd); 
-    }
-    else
-    {
-        dirToAdd->dirName = dirName; 
-        dirToAdd->next = *head; 
-        *head = dirToAdd; 
-    }
-}
-
-void printDir(dirNode *head)
-{
-    if(head == NULL)
-    {
-        printf("The List is empty.\n"); 
-    }
-    else
-    {
-        while(head != NULL)
-        {
-            printf("%s ->", head->dirName); 
-            head = head->next; 
-        }
-    }
-}
 // read input as "create data.txt"
 // read input
 char * getInput(void)
@@ -197,5 +165,125 @@ void displayChoices(void)
     printf("- \tedit.\n"); 
     printf("- \tdelete.\n"); 
     printf("= \texit.\n"); 
+}
+void add_Dir(dirNode **head, char *dirName)
+{
+    dirNode *dirToAdd = (dirNode*)malloc(sizeof(dirNode)); 
+    if(!dirToAdd)
+    {
+        printf("Error creating Directory\n"); 
+        free(dirToAdd); 
+    }
+    if(*head == NULL) // list is empty
+    {
+        dirToAdd->dirName = dirName; 
+        dirToAdd->next = *head; 
+        dirToAdd->prev = NULL;
+        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+        {
+            dirToAdd->files[i].fileName = "xemptyx"; 
+        }
+    }
+    else
+    {
+        dirToAdd->dirName = dirName; 
+        dirToAdd->next = *head; 
+        dirToAdd->prev = (*head)->prev; 
+         
+    }
+    *head = dirToAdd;
+}
+
+dirNode * lookup_Dir(dirNode *head, char *dirName)
+{
+    while(head != NULL)
+    {
+        if(strcmp(head->dirName, dirName) == 0)
+        {
+            return head; 
+        }
+        head = head->next; 
+    }
+    printf("Error finding that Direcotry."); 
+    return NULL; 
+}
+
+void add_File_To_Dir(dirNode *head, char *fileName)
+{
+    while(head != NULL)
+    {
+        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+        {
+            if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
+            {
+                FILE *newFile = createFile(fileName);
+                if(!newFile)
+                {
+                    printf("ERR: File could not be created"); 
+                }
+                else
+                {
+                    printf("File created in %s directory as %s \n", head->dirName, head->files[i].fileName); 
+                }
+            }
+        }
+    }
+}
+
+void ls_Dir(dirNode *head)
+{
+    int fileCount = 0; 
+    if(head == NULL)
+    {
+        printf("No Directory.\n"); 
+    }
+    else
+    {
+        printf("Name of Directory: %s\n", head->dirName);
+        if(head->next != NULL)
+        {
+            printf("%s.dir\n", head->next->dirName); 
+        }
+        for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+        {
+            if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
+            {
+                break; 
+            }
+            else
+            {
+                printf("%s\n", head->files[i].fileName); 
+                fileCount++; 
+            }
+        }
+        if(fileCount == 0)
+        {
+            printf("No files in Directory.\n"); 
+        }
+    }
+}
+
+void printDir(dirNode *head)
+{
+    if(head == NULL)
+    {
+        printf("The List is empty.\n"); 
+    }
+    else
+    {
+        while(head != NULL)
+        {
+            if(head->prev == NULL)
+            {
+                printf("NULL -> "); 
+            }
+            printf("%s -> ", head->dirName); 
+            head = head->next; 
+        }
+        if(head == NULL)
+        {
+            printf("NULL"); 
+        }
+    }
 }
 #endif

@@ -6,11 +6,10 @@
 
 int main()
 {
-    addDir(&head, getInput());
-    addDir(&head, getInput()); 
-    addDir(&head, getInput()); 
-    addDir(&head, getInput());  
-    printDir(head); 
+    add_Dir(&head, getInput());
+    ls_Dir(head); 
+    add_File_To_Dir(head, getInput()); 
+    ls_Dir(head); 
 
     printf("Welcome to Shelly... a super basic file shell thing.\n");   
     FILE *userFile; 

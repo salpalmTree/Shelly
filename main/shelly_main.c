@@ -4,15 +4,6 @@
 #include <strings.h>
 #include "../include/shelly_func.h"
 
-
-
-
-
-
-
-
-
-             // Hello from Vim!
 int main()
 {
     add_Dir(&head, getInput());

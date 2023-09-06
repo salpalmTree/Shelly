@@ -2,6 +2,7 @@
 #define _SHELLY_FUNC_H
 #define SHELLY_GL_BUFSIZE 64
 #define MAX_FILE_AMOUNT 10
+#define SHELLY_DELI " \n\t\r\a"
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,7 @@ typedef struct dirNode {
 }dirNode; 
 
 // read input as "create data.txt"
+char ** parse_command(char * line);
 // read input
 char * getInput(void);
 // string comparison function

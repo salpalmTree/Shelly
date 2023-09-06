@@ -1,13 +1,25 @@
 #include "../include/shelly_func.h"
 
+
 bool running = false;  
 dirNode *head = NULL; 
-int main()
-{
-    add_Dir(&head, getInput());
-    add_Dir(&head, getInput()); 
-    add_Dir(&head, getInput()); 
-    ls_Dir(lookup_Dir(head, getInput())); 
+char ** userCommandIn; 
+int main(void)
+{   
+    int i = 0; 
+    userCommandIn = parse_command(getInput());
+    if(userCommandIn != NULL)
+    {
+        while(userCommandIn[i] != NULL)
+        {
+            printf("%s \n", userCommandIn[i]); 
+            i++; 
+        }
+    }
+    // add_Dir(&head, getInput());
+    // add_Dir(&head, getInput()); 
+    // add_Dir(&head, getInput()); 
+    // ls_Dir(lookup_Dir(head, getInput())); 
     //add_File_To_Dir(lookup_Dir(head, getInput()), getInput()); 
     //ls_Dir(head);
 
@@ -51,13 +63,46 @@ int main()
     return 0; 
 }
 
+char ** parse_command(char * line)
+{
+    int buffsize = SHELLY_GL_BUFSIZE, position = 0;
+    char **tokens = (char **)malloc(sizeof(char *) * buffsize);
+    char *token; 
+    if(!tokens)
+    {
+        printf("Error allocating\n"); 
+        exit(EXIT_FAILURE); 
+    }
+    token = strtok(line, SHELLY_DELI); 
+    while(token != NULL)
+    {
+        if(position > 2)
+        {
+            printf("Not a valid command combo.\n");
+            return NULL;
+        }
+        else
+        {
+            tokens[position] = token; 
+            position++;
+            token = strtok(NULL, SHELLY_DELI); 
+        }
+    }
+    tokens[position] = NULL;
+    return tokens; 
+}
+
 char * getInput(void)
 {
     int buffsize = SHELLY_GL_BUFSIZE; 
     int position = 0; 
     int c; 
     char *theInputString = (char *)malloc(sizeof(char) * buffsize);  
-    if(!theInputString) return NULL; 
+    if(!theInputString)
+    {
+        printf("Error allocating.\n"); 
+        return NULL; 
+    }
     while((c = getchar()) != '\n')
     {
         theInputString[position] = c; 

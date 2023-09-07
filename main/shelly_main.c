@@ -1,28 +1,21 @@
 #include "../include/shelly_func.h"
 
-
+// char  *validObj[] = {"file", "dir"}; 
 bool running = false;  
 dirNode *head = NULL; 
 char ** userCommandIn; 
 int main(void)
-{   
-    int i = 0; 
-    userCommandIn = parse_command(getInput());
-    if(userCommandIn != NULL)
-    {
-        while(userCommandIn[i] != NULL)
-        {
-            printf("%s \n", userCommandIn[i]); 
-            i++; 
-        }
-    }
+{ 
+    char * inLine = getInput(); 
+    userCommandIn = parse_command(inLine);
+    process_command(userCommandIn); 
     // add_Dir(&head, getInput());
     // add_Dir(&head, getInput()); 
     // add_Dir(&head, getInput()); 
     // ls_Dir(lookup_Dir(head, getInput())); 
     //add_File_To_Dir(lookup_Dir(head, getInput()), getInput()); 
     //ls_Dir(head);
-
+    
     printf("Welcome to Shelly... a super basic file shell thing.\n");   
     FILE *userFile; 
     char *userInputCommand; 
@@ -59,7 +52,6 @@ int main(void)
         break;
         }
     }while (running == true);
-
     return 0; 
 }
 
@@ -121,7 +113,7 @@ char * getInput(void)
 bool equalStrings(char *stringOne, char *stringTwo)
 {
     bool areEqual; 
-    (strcmp(stringOne, stringTwo) != 0 ? (areEqual = false) : (areEqual = true)); 
+    (strcmp(stringOne, stringTwo) == 0 ? (areEqual = true) : (areEqual = false)); 
     return areEqual; 
 }
 
@@ -129,7 +121,7 @@ aCommand commandType(char *userInputString)
 {
     if(equalStrings(userInputString, "delete"))
     {
-        free(userInputString);
+        //free(userInputString);
         return DELETE; 
     }
     else if(equalStrings(userInputString, "create"))
@@ -167,7 +159,6 @@ FILE * createFile(char *fileName)
     {
         printf("A file has been created %s\n", fileName); 
         printf("To file ->"); 
-        //free(fileName); // Might free() too much
         char *userIn = getInput(); 
         fputs(userIn, newFile); 
         fclose(newFile);
@@ -256,7 +247,6 @@ void add_Dir(dirNode **head, char *dirName)
         dirToAdd->dirName = dirName; 
         dirToAdd->next = *head; 
         dirToAdd->prev = (*head)->prev; 
-         
     }
     for(int i = 0; i < MAX_FILE_AMOUNT; i++)
     {
@@ -337,6 +327,86 @@ void ls_Dir(dirNode *head)
         }
     }
 }
+
+void process_command(char **userCommandIn)
+{
+    if(userCommandIn != NULL)
+    {
+        switch (commandType(userCommandIn[0])) 
+        {
+            case CREATE:
+                printf("User picked Create.\n"); 
+                if(equalStrings(userCommandIn[1], File))
+                {
+                    printf("User picked file.\n"); 
+                }
+                else if(equalStrings(userCommandIn[1], Dir))
+                {
+                    printf("User picked directory.\n"); 
+                }
+                else
+                {
+                    printf("Invalid action.\n"); 
+                }
+                break; 
+            case DELETE:
+                printf("User picked Delete.\n"); 
+                if(equalStrings(userCommandIn[1], File))
+                {
+                    printf("User picked file.\n"); 
+                }
+                else if(equalStrings(userCommandIn[1], Dir))
+                {
+                    printf("User picked directory.\n"); 
+                }
+                else
+                {
+                    printf("Invalid action.\n"); 
+                }
+                break;
+            case EDIT: 
+                printf("User picked Edit.\n"); 
+                if(equalStrings(userCommandIn[1], File))
+                {
+                    printf("User picked file.\n"); 
+                }
+                else if(equalStrings(userCommandIn[1], Dir))
+                {
+                    printf("User picked directory.\n"); 
+                }
+                else
+                {
+                    printf("Invalid action.\n"); 
+                }
+                break; 
+            case READ:
+                printf("User picked Read.\n"); 
+                if(equalStrings(userCommandIn[1], File))
+                {
+                    printf("User picked file.\n"); 
+                }
+                else if(equalStrings(userCommandIn[1], Dir))
+                {
+                    printf("User picked directory.\n"); 
+                }
+                else
+                {
+                    printf("Invalid action.\n"); 
+                }
+                break; 
+            case EXT:
+                printf("User picked to exit.\n"); 
+                break; 
+            default:
+                printf("Choose something appropriate.\n"); 
+                break;
+        }
+        // printf("%d \n", equalStrings(userCommandIn[0], "create"));
+        // printf("%d \n", equalStrings(userCommandIn[1], "file")); 
+        // printf("%d \n", equalStrings(userCommandIn[2], "data.txt")); 
+    }
+}
+
 
 void printDir(dirNode *head)
 {

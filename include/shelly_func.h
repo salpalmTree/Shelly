@@ -3,6 +3,9 @@
 #define SHELLY_GL_BUFSIZE 64
 #define MAX_FILE_AMOUNT 10
 #define SHELLY_DELI " \n\t\r\a"
+#define File "file"
+#define Dir "dir"
+
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,6 +58,8 @@ dirNode * lookup_Dir(dirNode *head, char *dirName);
 void add_File_To_Dir(dirNode *head, char *fileName);
 // list a directory
 void ls_Dir(dirNode *head);
+// new command processing function
+void process_command(char **userCommandIn); 
 // print a Directory for debugging
 void printDir(dirNode *head);
 #endif

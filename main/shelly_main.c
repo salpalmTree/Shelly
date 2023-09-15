@@ -1,60 +1,29 @@
 #include "../include/shelly_func.h"
 
-// char  *validObj[] = {"file", "dir"}; 
-bool running = false;  
-dirNode *head = NULL; 
-char ** userCommandIn; 
+bool running;  
+dirNode *head = NULL;
+char *userInput; 
+char **parsed_command; 
 int main(void)
-{ 
-    char * inLine = getInput(); 
-    userCommandIn = parse_command(inLine);
-    process_command(userCommandIn); 
-    // add_Dir(&head, getInput());
-    // add_Dir(&head, getInput()); 
-    // add_Dir(&head, getInput()); 
-    // ls_Dir(lookup_Dir(head, getInput())); 
-    //add_File_To_Dir(lookup_Dir(head, getInput()), getInput()); 
-    //ls_Dir(head);
-    
+{
+    // NOTE: first init the shell, 
+    //      then you start the loop shell
+    //      lastly you clean up and free memory
     printf("Welcome to Shelly... a super basic file shell thing.\n");   
     FILE *userFile; 
     char *userInputCommand; 
-    char *userInput; 
+    running = true;
 
-    do
-    {
-        displayChoices();
-        userInputCommand = getInput(); 
-        switch (commandType(userInputCommand))
-        {
-        case CREATE:
-            userInput = getInput(); 
-            userFile = createFile(userInput); 
-        break;
-        case READ:
-            userInput = getInput(); 
-            readFile(userInput);
-        break; 
-        case EDIT:
-            userInput = getInput(); 
-            userFile = editFile(userInput);
-        break; 
-        case DELETE:
-            userInput = getInput(); 
-            deleteFile(userInput); 
-        break; 
-        case EXT:
-            printf("Exiting...\n"); 
-            running = false; 
-        break;
-        default:
-            printf("Please choose a valid choice.\n"); 
-        break;
-        }
-    }while (running == true);
+    do {
+        printf("  >"); 
+        userInput = getInput(); 
+        parsed_command = parse_command(userInput);
+        process_command(parsed_command); 
+    }while (running == true); 
     return 0; 
 }
 
+// Organizes a command in to be later processed
 char ** parse_command(char * line)
 {
     int buffsize = SHELLY_GL_BUFSIZE, position = 0;
@@ -84,6 +53,7 @@ char ** parse_command(char * line)
     return tokens; 
 }
 
+// Gets input from user, used for all input asks
 char * getInput(void)
 {
     int buffsize = SHELLY_GL_BUFSIZE; 
@@ -110,6 +80,7 @@ char * getInput(void)
     return theInputString; 
 }
 
+// Check if two strings are equal
 bool equalStrings(char *stringOne, char *stringTwo)
 {
     bool areEqual; 
@@ -117,6 +88,7 @@ bool equalStrings(char *stringOne, char *stringTwo)
     return areEqual; 
 }
 
+// Choosing which command 
 aCommand commandType(char *userInputString)
 {
     if(equalStrings(userInputString, "delete"))
@@ -127,6 +99,10 @@ aCommand commandType(char *userInputString)
     else if(equalStrings(userInputString, "create"))
     {
         return CREATE;
+    }
+    else if(equalStrings(userInputString, "set"))
+    {
+        return SET; 
     }
     else if(equalStrings(userInputString, "read"))
     {
@@ -140,19 +116,20 @@ aCommand commandType(char *userInputString)
     {
         return EXT; 
     }
-    else
+    else if(equalStrings(userInputString, "help"))
     {
-        return CONT; 
+        return HELP;
     }
+    return CONT; 
 }
 
-
+// Creates new file and expects contents to be put in
 FILE * createFile(char *fileName)
 {
     FILE *newFile; 
     if((newFile = fopen(fileName, "w")) == NULL) {
         printf("File could not be created.\n");
-        free(fileName); 
+        //free(fileName); 
         return NULL;
     }
     else
@@ -162,21 +139,23 @@ FILE * createFile(char *fileName)
         char *userIn = getInput(); 
         fputs(userIn, newFile); 
         fclose(newFile);
-        free(fileName); 
-        free(userIn); 
+        //free(fileName); 
+        //free(userIn); 
         return newFile; 
     }
 }
 
+// Removes file
 void deleteFile(char *fileName)
 {
     if(remove(fileName))
     {
         printf("Could not delete that file.\n"); 
     }
-    free(fileName); 
+    //free(fileName); 
 }
 
+// Opens file to be read and displays contents
 void readFile(char *fileName)
 {
     FILE *fileToRead; 
@@ -184,7 +163,7 @@ void readFile(char *fileName)
     if((fileToRead = fopen(fileName, "r")) == NULL) 
     {
         printf("File doesn't exit.\n"); 
-        free(fileName); 
+        //free(fileName); 
     }
     else
     { 
@@ -192,42 +171,44 @@ void readFile(char *fileName)
         {
             putchar(c); 
         }
-        free(fileName); 
+        //free(fileName); 
         fclose(fileToRead); 
     }
 }
 
+// Opens and appends given file
 FILE * editFile(char *fileName)
 {
     FILE *fileToAppend; 
     if((fileToAppend = fopen(fileName, "a")) == NULL)
     {
         printf("That file could not be edited.\n");
-        free(fileName); 
+        //free(fileName); 
         return NULL;
     }
     else
     { 
         printf("File being appended %s\n", fileName); 
-        printf("To File ->"); 
-        free(fileName); 
+        printf("To File -> "); 
+        //free(fileName); 
         char *userIn = getInput(); 
         fputs(userIn, fileToAppend); 
-        free(userIn); 
+        //free(userIn); 
         fclose(fileToAppend); 
         return fileToAppend; 
     }
 }
 
-void displayChoices(void)
+void command_options(void)
 {
-    printf("\n- \tcreate.\n"); 
-    printf("- \tread.\n"); 
-    printf("- \tedit.\n"); 
-    printf("- \tdelete.\n"); 
-    printf("= \texit.\n"); 
+    printf("Enter a [command] [obj. Type] [obj. Name]\n");
+    printf("Commands can include:\n");
+    printf("\tcreate, delete, edit, set, and exit\n"); 
+    printf("Obj. Types are:\n"); 
+    printf("\t'file', and 'dir'\n");  
 }
 
+// Adds a new directory 
 void add_Dir(dirNode **head, char *dirName)
 {
     dirNode *dirToAdd = (dirNode*)malloc(sizeof(dirNode)); 
@@ -253,8 +234,10 @@ void add_Dir(dirNode **head, char *dirName)
         dirToAdd->files[i].fileName = "xemptyx"; 
     }
     *head = dirToAdd;
+    printf("Directory %s created\n", dirName); 
 }
 
+// Looks up a specific directory and returns a pointer to it
 dirNode * lookup_Dir(dirNode *head, char *dirName)
 {
     while(head != NULL)
@@ -269,12 +252,13 @@ dirNode * lookup_Dir(dirNode *head, char *dirName)
     return NULL; 
 }
 
+// Creates file and add it to given directory
 void add_File_To_Dir(dirNode *head, char *fileName)
 {
     bool createdFile = false; 
     if(head == NULL)
     {
-        printf("Directory not found.\n");
+        printf("No valid directory found.\n");
     }
     else
     {
@@ -300,7 +284,7 @@ void add_File_To_Dir(dirNode *head, char *fileName)
         }
     }
 }
-
+// List what is 'around' the given directory
 void ls_Dir(dirNode *head)
 {
     int i = 0; 
@@ -327,22 +311,26 @@ void ls_Dir(dirNode *head)
         }
     }
 }
-
-void process_command(char **userCommandIn)
+// Deciphers the command line in 
+void process_command(char **line_in)
 {
-    if(userCommandIn != NULL)
+    if(line_in != NULL)
     {
-        switch (commandType(userCommandIn[0])) 
+        switch (commandType(line_in[0])) 
         {
             case CREATE:
                 printf("User picked Create.\n"); 
-                if(equalStrings(userCommandIn[1], File))
+                if(equalStrings(line_in[1], File))
                 {
-                    printf("User picked file.\n"); 
+                    char *fileName = line_in[2]; 
+                    add_File_To_Dir(head, fileName);
+                    // add_file_to_dir
                 }
-                else if(equalStrings(userCommandIn[1], Dir))
+                else if(equalStrings(line_in[1], Dir))
                 {
-                    printf("User picked directory.\n"); 
+                    printf("User picked directory.\n");
+                    char *directoryName = line_in[2]; 
+                    add_Dir(&head, directoryName); 
                 }
                 else
                 {
@@ -351,13 +339,30 @@ void process_command(char **userCommandIn)
                 break; 
             case DELETE:
                 printf("User picked Delete.\n"); 
-                if(equalStrings(userCommandIn[1], File))
+                if(equalStrings(line_in[1], File))
                 {
-                    printf("User picked file.\n"); 
+                    printf("User picked file.\n");
+                    for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+                    {
+                        if(equalStrings(line_in[2], head->files[i].fileName))
+                        {
+                            deleteFile(head->files[i].fileName);
+                            printf("File '%s' deleted\n", line_in[2]);
+                            break; 
+                        }
+                        if(i == (MAX_FILE_AMOUNT - 1))
+                        {
+                            printf("File '%s' not found.\n", line_in[2]); 
+                        }
+                    }
+                    
+                    
+                    // look for file in directory and rm
                 }
-                else if(equalStrings(userCommandIn[1], Dir))
+                else if(equalStrings(line_in[1], Dir))
                 {
                     printf("User picked directory.\n"); 
+                    // remove given directory 
                 }
                 else
                 {
@@ -366,44 +371,65 @@ void process_command(char **userCommandIn)
                 break;
             case EDIT: 
                 printf("User picked Edit.\n"); 
-                if(equalStrings(userCommandIn[1], File))
+                if(equalStrings(line_in[1], File))
                 {
                     printf("User picked file.\n"); 
+                    // append given file in the directory
                 }
-                else if(equalStrings(userCommandIn[1], Dir))
+                else if(equalStrings(line_in[1], Dir))
                 {
                     printf("User picked directory.\n"); 
+                    // rename directory? 
                 }
                 else
                 {
                     printf("Invalid action.\n"); 
+                }
+                break;
+            case SET:
+                printf("User picked to set a directory\n"); 
+                if(equalStrings(line_in[1], Dir))
+                {
+                    // TODO: use lookup_Dir and set it to a new dirNode pointer
+                    // to preserve the original 'head'. Search using 'head'. 
+                    // never change 'head' value. 
+                    printf("Setting %s as a directory.\n", line_in[2]); 
+                    // choosing an already defined directory
+                }
+                else
+                {
+                    printf("%s is not a directory.\n", line_in[2]); 
                 }
                 break; 
             case READ:
                 printf("User picked Read.\n"); 
-                if(equalStrings(userCommandIn[1], File))
+                if(equalStrings(line_in[1], File))
                 {
                     printf("User picked file.\n"); 
+                    // read file from a directory
                 }
-                else if(equalStrings(userCommandIn[1], Dir))
+                else if(equalStrings(line_in[1], Dir))
                 {
                     printf("User picked directory.\n"); 
+                    // list what the directory has?
                 }
                 else
                 {
                     printf("Invalid action.\n"); 
                 }
+                break;
+            case HELP: 
+                command_options(); 
                 break; 
             case EXT:
-                printf("User picked to exit.\n"); 
+                printf("Exiting...\n");
+                running = false; 
                 break; 
             default:
                 printf("Choose something appropriate.\n"); 
                 break;
         }
-        // printf("%d \n", equalStrings(userCommandIn[0], "create"));
-        // printf("%d \n", equalStrings(userCommandIn[1], "file")); 
-        // printf("%d \n", equalStrings(userCommandIn[2], "data.txt")); 
+        //free(line_in); // Frees up the whole command in 
     }
 }
 

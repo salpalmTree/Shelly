@@ -17,7 +17,9 @@ typedef enum command {
     CREATE, 
     READ,
     EDIT,
+    SET,
     CONT,
+    HELP,
 }aCommand; 
 
 typedef struct fileNode {

@@ -1,7 +1,14 @@
 #include "../include/shelly_func.h"
 
+// TODO: add full functionality
+//      add a cd .. function (go back one directory)
+//      add copy function [copy file -> file2]
+//          and [create copy file.txt]
+//      add 'delete all' for directory
+
 bool running;  
 dirNode *head = NULL;
+dirNode *set_head = NULL; 
 char *userInput; 
 char **parsed_command; 
 int main(void)
@@ -15,10 +22,118 @@ int main(void)
     running = true;
 
     do {
-        printf("  >"); 
+
+        if(set_head) { printf("\t%s >", set_head->dirName); }
+        else { printf("\t>"); }
         userInput = getInput(); 
         parsed_command = parse_command(userInput);
-        process_command(parsed_command); 
+        switch (commandType(parsed_command[0])) {
+            case CREATE:
+                if(equalStrings(parsed_command[1], File))
+                {
+                    if(!set_head)
+                    {
+                        printf("Directory not set.\n"); 
+                    }
+                    else
+                    {
+                        add_File_To_Dir(set_head, parsed_command[2]);
+                    }
+                }
+                else if(equalStrings(parsed_command[1], Dir))
+                {
+                    add_Dir(&head, parsed_command[2]); 
+                }
+                else
+                {
+                    printf("Please choose something valid.\n"); 
+                }
+                break; 
+            case DELETE:
+                if(equalStrings(parsed_command[1], File))
+                {
+                    int8_t valid_file = find_file(set_head, parsed_command[2]);
+                    if(valid_file >= 0) 
+                    {
+                         printf("File '%s' has been deleted.\n", parsed_command[2]); 
+                         deleteFile(parsed_command[2]);
+                         set_head->files[valid_file].fileName = EMPTY_FILE; 
+                    }
+                    else { printf("File '%s' not found.\n", parsed_command[2]); }
+                }
+                else if(equalStrings(parsed_command[1], Dir))
+                {
+                    // rm directory
+                }
+                else
+                {
+                    printf("Please choose something valid.\n"); 
+                }
+                break;
+            case EDIT:
+                if(equalStrings(parsed_command[1], File))
+                {
+                    printf("Editing file...\n");
+                    int8_t valid_file = find_file(set_head, parsed_command[2]); 
+                    if(valid_file >= 0)
+                    {
+                        editFile(set_head->files[valid_file].fileName);
+                    }
+                    else { printf("File '%s' not found.\n", parsed_command[2]); }
+                }
+                else if(equalStrings(parsed_command[1], Dir))
+                {
+                    printf("Editing dir name...\n"); 
+                }
+                else
+                {
+                    printf("Choose something valid.\n"); 
+                }
+                break; 
+            case SET:
+                if(equalStrings(parsed_command[1], Dir))
+                {
+                    if(!(set_head = lookup_Dir(head, parsed_command[2])))
+                    {
+                        printf("Directory doesn't exist.\n"); 
+                    }
+                    else
+                    {
+                        printf("Directory '%s' set\n", set_head->dirName);  
+                    }
+                }
+                break; 
+            case READ:
+                if(equalStrings(parsed_command[1], File))
+                {
+                    int8_t valid_file = find_file(set_head, parsed_command[2]); 
+                    if(valid_file >= 0)
+                    {
+                        readFile(set_head->files[valid_file].fileName); 
+                    }
+                    else { printf("File '%s' not found.\n", parsed_command[2]); }
+                }
+                else
+                {
+                    printf("Choose something valid.\n"); 
+                }
+                break; 
+            case LS:
+                ls_Dir(set_head);
+                //printDir(head); 
+                break; 
+            case HELP:
+                command_options();  
+                break; 
+            case EXT:
+                printf("Exiting..."); 
+                running = false; 
+                break; 
+            default: 
+                printf("Choose something valid.\n"); 
+                break; 
+        }
+        //process_command(parsed_command); 
     }while (running == true); 
     return 0; 
 }
@@ -43,7 +158,7 @@ char ** parse_command(char * line)
             return NULL;
         }
         else
-        {
+        { 
             tokens[position] = token; 
             position++;
             token = strtok(NULL, SHELLY_DELI); 
@@ -120,6 +235,10 @@ aCommand commandType(char *userInputString)
     {
         return HELP;
     }
+    else if(equalStrings(userInputString, "ls"))
+    {
+        return LS;
+    }
     return CONT; 
 }
 
@@ -171,20 +290,20 @@ void readFile(char *fileName)
         {
             putchar(c); 
         }
+        printf("\n"); 
         //free(fileName); 
         fclose(fileToRead); 
     }
 }
 
 // Opens and appends given file
-FILE * editFile(char *fileName)
+void editFile(char *fileName)
 {
     FILE *fileToAppend; 
     if((fileToAppend = fopen(fileName, "a")) == NULL)
     {
         printf("That file could not be edited.\n");
         //free(fileName); 
-        return NULL;
     }
     else
     { 
@@ -195,7 +314,6 @@ FILE * editFile(char *fileName)
         fputs(userIn, fileToAppend); 
         //free(userIn); 
         fclose(fileToAppend); 
-        return fileToAppend; 
     }
 }
 
@@ -203,7 +321,7 @@ void command_options(void)
 {
     printf("Enter a [command] [obj. Type] [obj. Name]\n");
     printf("Commands can include:\n");
-    printf("\tcreate, delete, edit, set, and exit\n"); 
+    printf("\tcreate, delete, edit, set, ls, and exit\n"); 
     printf("Obj. Types are:\n"); 
     printf("\t'file', and 'dir'\n");  
 }
@@ -222,18 +340,25 @@ void add_Dir(dirNode **head, char *dirName)
         dirToAdd->dirName = dirName; 
         dirToAdd->next = *head; 
         dirToAdd->prev = NULL;
+        *head = dirToAdd;
     }
     else
     {
-        dirToAdd->dirName = dirName; 
-        dirToAdd->next = *head; 
-        dirToAdd->prev = (*head)->prev; 
+        dirNode *temp = *head; 
+        dirToAdd->dirName = dirName;
+        while(temp->next != NULL)
+        {
+            temp = temp->next; 
+        }
+        temp->next = dirToAdd;
+        dirToAdd->prev = temp;
+        dirToAdd->next = NULL; 
     }
     for(int i = 0; i < MAX_FILE_AMOUNT; i++)
     {
-        dirToAdd->files[i].fileName = "xemptyx"; 
+        dirToAdd->files[i].fileName = EMPTY_FILE; 
     }
-    *head = dirToAdd;
+    
     printf("Directory %s created\n", dirName); 
 }
 
@@ -256,31 +381,35 @@ dirNode * lookup_Dir(dirNode *head, char *dirName)
 void add_File_To_Dir(dirNode *head, char *fileName)
 {
     bool createdFile = false; 
+    int8_t i; 
     if(head == NULL)
     {
         printf("No valid directory found.\n");
     }
     else
     {
-        while(!createdFile)
+        for(i = 0; i < MAX_FILE_AMOUNT; i++)
         {
-            for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+            if(equalStrings(head->files[i].fileName, EMPTY_FILE))
             {
-                if((strcmp(head->files[i].fileName, "xemptyx")) == 0)
+                if((head->files[i].file = createFile(fileName)))
                 {
-                    if(!(head->files[i].file = createFile(fileName)))
-                    {
-                        printf("File could not be created.\n"); 
-                    }
-                    else
-                    {
-                        head->files[i].fileName = fileName; 
-                        printf("File created in %s directory as %s \n", head->dirName, head->files[i].fileName); 
-                        createdFile = true; 
-                        break; 
-                    }
+                    head->files[i].fileName = fileName; 
+                    printf("File '%s' created in '%s' directory.\n", head->files[i].fileName, head->dirName); 
+                    createdFile = true; 
+                    break; 
+                }
+                else
+                {
+                    printf("File could not be created.\n"); 
+                    break; 
                 }
             }
+        }
+        if(i == (MAX_FILE_AMOUNT) && createdFile == false) // for loop still increases i to 10 
+        {
+            printf("Directory is full.\n");
+            ls_Dir(head); 
         }
     }
 }
@@ -298,20 +427,31 @@ void ls_Dir(dirNode *head)
         printf("Name of Directory: %s\n", head->dirName);
         if(head->next != NULL)
         {
-            printf("%s.dir\n", head->next->dirName); 
+            printf(">%s\n", head->next->dirName); 
         }
         while(i < MAX_FILE_AMOUNT)
         {
-            if((strcmp(head->files[i].fileName, "xemptyx")) != 0)
+            if((strcmp(head->files[i].fileName, EMPTY_FILE)) != 0)
             {
-                printf("%s\n", head->files[i].fileName);
+                printf("~ %s\n", head->files[i].fileName);
                 fileCount++; 
             }
             i++; 
         }
     }
 }
-// Deciphers the command line in 
+int find_file(dirNode *head, char *fileName)
+{
+    for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+    {
+        if(equalStrings(fileName, head->files[i].fileName))
+        {
+            return i; 
+        }
+    }
+    return INT8_MIN;
+}
+// Deciphers the command line in (deprecated) 
 void process_command(char **line_in)
 {
     if(line_in != NULL)
@@ -339,6 +479,7 @@ void process_command(char **line_in)
                 break; 
             case DELETE:
                 printf("User picked Delete.\n"); 
+                bool file_deleted = false; 
                 if(equalStrings(line_in[1], File))
                 {
                     printf("User picked file.\n");
@@ -348,15 +489,15 @@ void process_command(char **line_in)
                         {
                             deleteFile(head->files[i].fileName);
                             printf("File '%s' deleted\n", line_in[2]);
+                            head->files[i].fileName = EMPTY_FILE;
+                            file_deleted = true; 
                             break; 
                         }
-                        if(i == (MAX_FILE_AMOUNT - 1))
+                        if(!file_deleted)
                         {
                             printf("File '%s' not found.\n", line_in[2]); 
                         }
                     }
-                    
-                    
                     // look for file in directory and rm
                 }
                 else if(equalStrings(line_in[1], Dir))
@@ -393,7 +534,8 @@ void process_command(char **line_in)
                     // TODO: use lookup_Dir and set it to a new dirNode pointer
                     // to preserve the original 'head'. Search using 'head'. 
                     // never change 'head' value. 
-                    printf("Setting %s as a directory.\n", line_in[2]); 
+                    printf("Setting %s as a directory.\n", line_in[2]);
+
                     // choosing an already defined directory
                 }
                 else
@@ -408,11 +550,6 @@ void process_command(char **line_in)
                     printf("User picked file.\n"); 
                     // read file from a directory
                 }
-                else if(equalStrings(line_in[1], Dir))
-                {
-                    printf("User picked directory.\n"); 
-                    // list what the directory has?
-                }
                 else
                 {
                     printf("Invalid action.\n"); 
@@ -420,7 +557,10 @@ void process_command(char **line_in)
                 break;
             case HELP: 
                 command_options(); 
-                break; 
+                break;
+            case LS: 
+                ls_Dir(head); 
+                break ;
             case EXT:
                 printf("Exiting...\n");
                 running = false; 
@@ -449,7 +589,16 @@ void printDir(dirNode *head)
                 printf("NULL -> "); 
             }
             printf("%s -> ", head->dirName); 
-            head = head->next; 
+            head = head->next;
+            if(head->next == NULL)
+            {
+                printf("\n"); 
+                while (head != NULL)
+                {
+                    printf("%s <-", head->dirName); 
+                    head = head->prev;
+                }
+            }
         }
         if(head == NULL)
         {

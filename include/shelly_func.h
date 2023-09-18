@@ -3,6 +3,7 @@
 #define SHELLY_GL_BUFSIZE 64
 #define MAX_FILE_AMOUNT 10
 #define SHELLY_DELI " \n\t\r\a"
+#define EMPTY_FILE "xemptyx"
 #define File "file"
 #define Dir "dir"
 
@@ -13,13 +14,14 @@
 
 typedef enum command {
     EXT = 0,
-    DELETE,
-    CREATE, 
-    READ,
-    EDIT,
-    SET,
-    CONT,
-    HELP,
+    DELETE, // delete file or dir 
+    CREATE, // create file or dir 
+    READ, // read file 
+    EDIT, // edit/append file edit dir name?
+    SET, // set a dir 
+    CONT, // continue execution
+    HELP, // help
+    LS, // list directory
 }aCommand; 
 
 typedef struct fileNode {
@@ -49,9 +51,9 @@ void deleteFile(char *fileName);
 // read file
 void readFile(char *fileName);
 // edit file (append)
-FILE * editFile(char *fileName);
+void editFile(char *fileName);
 // display choices
-void displayChoices(void);
+void command_options(void);
 // add a directory
 void add_Dir(dirNode **head, char *dirName);
 // look up a directory 
@@ -60,6 +62,8 @@ dirNode * lookup_Dir(dirNode *head, char *dirName);
 void add_File_To_Dir(dirNode *head, char *fileName);
 // list a directory
 void ls_Dir(dirNode *head);
+// is a file in the directory
+int find_file(dirNode *head, char *fileName); 
 // new command processing function
 void process_command(char **userCommandIn); 
 // print a Directory for debugging

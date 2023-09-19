@@ -199,7 +199,6 @@ aCommand commandType(char *userInputString)
 {
     if(equalStrings(userInputString, "delete"))
     {
-        //free(userInputString);
         return DELETE; 
     }
     else if(equalStrings(userInputString, "create"))
@@ -237,7 +236,6 @@ FILE * createFile(char *fileName)
     FILE *newFile; 
     if((newFile = fopen(fileName, "w")) == NULL) {
         printf("File could not be created.\n");
-        //free(fileName); 
         return NULL;
     }
     else
@@ -247,8 +245,6 @@ FILE * createFile(char *fileName)
         char *userIn = getInput(); 
         fputs(userIn, newFile); 
         fclose(newFile);
-        //free(fileName); 
-        //free(userIn); 
         return newFile; 
     }
 }
@@ -258,7 +254,6 @@ void deleteFile(char *fileName)
     {
         printf("Could not delete that file.\n"); 
     }
-    //free(fileName); 
 }
 void readFile(char *fileName)
 {
@@ -267,7 +262,6 @@ void readFile(char *fileName)
     if((fileToRead = fopen(fileName, "r")) == NULL) 
     {
         printf("File doesn't exit.\n"); 
-        //free(fileName); 
     }
     else
     { 
@@ -276,7 +270,6 @@ void readFile(char *fileName)
             putchar(c); 
         }
         printf("\n"); 
-        //free(fileName); 
         fclose(fileToRead); 
     }
 }
@@ -286,16 +279,13 @@ void editFile(char *fileName)
     if((fileToAppend = fopen(fileName, "a")) == NULL)
     {
         printf("That file could not be edited.\n");
-        //free(fileName); 
     }
     else
     { 
         printf("File being appended %s\n", fileName); 
         printf("To File -> "); 
-        //free(fileName); 
         char *userIn = getInput(); 
         fputs(userIn, fileToAppend); 
-        //free(userIn); 
         fclose(fileToAppend); 
     }
 }
@@ -435,128 +425,6 @@ dirNode * back_one_directory(dirNode *head)
     }
     return head->prev; 
 }
-void process_command(char **line_in)
-{
-    if(line_in != NULL)
-    {
-        switch (commandType(line_in[0])) 
-        {
-            case CREATE:
-                printf("User picked Create.\n"); 
-                if(equalStrings(line_in[1], File))
-                {
-                    char *fileName = line_in[2]; 
-                    add_File_To_Dir(head, fileName);
-                    // add_file_to_dir
-                }
-                else if(equalStrings(line_in[1], Dir))
-                {
-                    printf("User picked directory.\n");
-                    char *directoryName = line_in[2]; 
-                    add_Dir(&head, directoryName); 
-                }
-                else
-                {
-                    printf("Invalid action.\n"); 
-                }
-                break; 
-            case DELETE:
-                printf("User picked Delete.\n"); 
-                bool file_deleted = false; 
-                if(equalStrings(line_in[1], File))
-                {
-                    printf("User picked file.\n");
-                    for(int i = 0; i < MAX_FILE_AMOUNT; i++)
-                    {
-                        if(equalStrings(line_in[2], head->files[i].fileName))
-                        {
-                            deleteFile(head->files[i].fileName);
-                            printf("File '%s' deleted\n", line_in[2]);
-                            head->files[i].fileName = EMPTY_FILE;
-                            file_deleted = true; 
-                            break; 
-                        }
-                        if(!file_deleted)
-                        {
-                            printf("File '%s' not found.\n", line_in[2]); 
-                        }
-                    }
-                    // look for file in directory and rm
-                }
-                else if(equalStrings(line_in[1], Dir))
-                {
-                    printf("User picked directory.\n"); 
-                    // remove given directory 
-                }
-                else
-                {
-                    printf("Invalid action.\n"); 
-                }
-                break;
-            case EDIT: 
-                printf("User picked Edit.\n"); 
-                if(equalStrings(line_in[1], File))
-                {
-                    printf("User picked file.\n"); 
-                    // append given file in the directory
-                }
-                else if(equalStrings(line_in[1], Dir))
-                {
-                    printf("User picked directory.\n"); 
-                    // rename directory? 
-                }
-                else
-                {
-                    printf("Invalid action.\n"); 
-                }
-                break;
-            case SET:
-                printf("User picked to set a directory\n"); 
-                if(equalStrings(line_in[1], Dir))
-                {
-                    // TODO: use lookup_Dir and set it to a new dirNode pointer
-                    // to preserve the original 'head'. Search using 'head'. 
-                    // never change 'head' value. 
-                    printf("Setting %s as a directory.\n", line_in[2]);
-
-                    // choosing an already defined directory
-                }
-                else
-                {
-                    printf("%s is not a directory.\n", line_in[2]); 
-                }
-                break; 
-            case READ:
-                printf("User picked Read.\n"); 
-                if(equalStrings(line_in[1], File))
-                {
-                    printf("User picked file.\n"); 
-                    // read file from a directory
-                }
-                else
-                {
-                    printf("Invalid action.\n"); 
-                }
-                break;
-            case HELP: 
-                command_options(); 
-                break;
-            case LS: 
-                ls_Dir(head); 
-                break ;
-            case EXT:
-                printf("Exiting...\n");
-                running = false; 
-                break; 
-            default:
-                printf("Choose something appropriate.\n"); 
-                break;
-        }
-        //free(line_in); // Frees up the whole command in 
-    }
-}
-
-
 void printDir(dirNode *head)
 {
     if(head == NULL)

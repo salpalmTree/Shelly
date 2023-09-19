@@ -1,9 +1,8 @@
 #include "../include/shelly_func.h"
 
 // TODO: add full functionality
-//      add a cd .. function (go back one directory)
 //      add copy function [copy file -> file2]
-//          and [create copy file.txt]
+//         and [create copy file.txt]
 //      add 'delete all' for directory
 
 bool running;  
@@ -13,16 +12,9 @@ char *userInput;
 char **parsed_command; 
 int main(void)
 {
-    // NOTE: first init the shell, 
-    //      then you start the loop shell
-    //      lastly you clean up and free memory
     printf("Welcome to Shelly... a super basic file shell thing.\n");   
-    FILE *userFile; 
-    char *userInputCommand; 
     running = true;
-
     do {
-
         if(set_head) { printf("\t%s >", set_head->dirName); }
         else { printf("\t>"); }
         userInput = getInput(); 
@@ -102,6 +94,10 @@ int main(void)
                         printf("Directory '%s' set\n", set_head->dirName);  
                     }
                 }
+                else if(equalStrings(parsed_command[1], ".."))
+                {
+                    set_head = back_one_directory(set_head); 
+                }
                 break; 
             case READ:
                 if(equalStrings(parsed_command[1], File))
@@ -133,12 +129,13 @@ int main(void)
                 printf("Choose something valid.\n"); 
                 break; 
         }
-        //process_command(parsed_command); 
     }while (running == true); 
+
+    free(head); 
+    free(userInput); 
+    free(parsed_command); 
     return 0; 
 }
-
-// Organizes a command in to be later processed
 char ** parse_command(char * line)
 {
     int buffsize = SHELLY_GL_BUFSIZE, position = 0;
@@ -167,8 +164,6 @@ char ** parse_command(char * line)
     tokens[position] = NULL;
     return tokens; 
 }
-
-// Gets input from user, used for all input asks
 char * getInput(void)
 {
     int buffsize = SHELLY_GL_BUFSIZE; 
@@ -194,16 +189,12 @@ char * getInput(void)
     theInputString[position] = '\0'; 
     return theInputString; 
 }
-
-// Check if two strings are equal
 bool equalStrings(char *stringOne, char *stringTwo)
 {
     bool areEqual; 
     (strcmp(stringOne, stringTwo) == 0 ? (areEqual = true) : (areEqual = false)); 
     return areEqual; 
 }
-
-// Choosing which command 
 aCommand commandType(char *userInputString)
 {
     if(equalStrings(userInputString, "delete"))
@@ -241,8 +232,6 @@ aCommand commandType(char *userInputString)
     }
     return CONT; 
 }
-
-// Creates new file and expects contents to be put in
 FILE * createFile(char *fileName)
 {
     FILE *newFile; 
@@ -263,8 +252,6 @@ FILE * createFile(char *fileName)
         return newFile; 
     }
 }
-
-// Removes file
 void deleteFile(char *fileName)
 {
     if(remove(fileName))
@@ -273,8 +260,6 @@ void deleteFile(char *fileName)
     }
     //free(fileName); 
 }
-
-// Opens file to be read and displays contents
 void readFile(char *fileName)
 {
     FILE *fileToRead; 
@@ -295,8 +280,6 @@ void readFile(char *fileName)
         fclose(fileToRead); 
     }
 }
-
-// Opens and appends given file
 void editFile(char *fileName)
 {
     FILE *fileToAppend; 
@@ -316,7 +299,6 @@ void editFile(char *fileName)
         fclose(fileToAppend); 
     }
 }
-
 void command_options(void)
 {
     printf("Enter a [command] [obj. Type] [obj. Name]\n");
@@ -325,8 +307,6 @@ void command_options(void)
     printf("Obj. Types are:\n"); 
     printf("\t'file', and 'dir'\n");  
 }
-
-// Adds a new directory 
 void add_Dir(dirNode **head, char *dirName)
 {
     dirNode *dirToAdd = (dirNode*)malloc(sizeof(dirNode)); 
@@ -361,8 +341,6 @@ void add_Dir(dirNode **head, char *dirName)
     
     printf("Directory %s created\n", dirName); 
 }
-
-// Looks up a specific directory and returns a pointer to it
 dirNode * lookup_Dir(dirNode *head, char *dirName)
 {
     while(head != NULL)
@@ -376,8 +354,6 @@ dirNode * lookup_Dir(dirNode *head, char *dirName)
     printf("Error finding that Direcotry.\n"); 
     return NULL; 
 }
-
-// Creates file and add it to given directory
 void add_File_To_Dir(dirNode *head, char *fileName)
 {
     bool createdFile = false; 
@@ -413,7 +389,6 @@ void add_File_To_Dir(dirNode *head, char *fileName)
         }
     }
 }
-// List what is 'around' the given directory
 void ls_Dir(dirNode *head)
 {
     int i = 0; 
@@ -451,7 +426,15 @@ int find_file(dirNode *head, char *fileName)
     }
     return INT8_MIN;
 }
-// Deciphers the command line in (deprecated) 
+dirNode * back_one_directory(dirNode *head) 
+{
+    if(head->prev == NULL)
+    {
+        printf("Can't go up a directory.\n"); 
+        return head; 
+    }
+    return head->prev; 
+}
 void process_command(char **line_in)
 {
     if(line_in != NULL)

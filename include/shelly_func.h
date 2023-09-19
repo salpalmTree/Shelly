@@ -64,6 +64,8 @@ void add_File_To_Dir(dirNode *head, char *fileName);
 void ls_Dir(dirNode *head);
 // is a file in the directory
 int find_file(dirNode *head, char *fileName); 
+// equivalent to 'cd ..' goes back one directory
+dirNode * back_one_directory(dirNode *head);
 // new command processing function
 void process_command(char **userCommandIn); 
 // print a Directory for debugging

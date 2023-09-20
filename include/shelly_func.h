@@ -21,6 +21,7 @@ typedef enum command {
     SET, // set a dir 
     CONT, // continue execution
     HELP, // help
+    CLEAR, // clear all files from a directory
     LS, // list directory
 }aCommand; 
 
@@ -66,8 +67,12 @@ void ls_Dir(dirNode *head);
 int find_file(dirNode *head, char *fileName); 
 // equivalent to 'cd ..' goes back one directory
 dirNode * back_one_directory(dirNode *head);
+// remove a directory
+void rm_directory(dirNode *head, char *dir_name); 
 // new command processing function
 void process_command(char **userCommandIn); 
 // print a Directory for debugging
 void printDir(dirNode *head);
+// remove all files from a directory
+void rm_all_files(dirNode *head); 
 #endif

@@ -1,9 +1,7 @@
 #include "../include/shelly_func.h"
 
-// TODO: add full functionality
-//      add copy function [copy file -> file2]
-//         and [create copy file.txt]
-//      add 'delete all' for directory
+// TODO: add copy function [copy file -> file2]
+//       and [create copy file.txt]
 
 bool running;  
 dirNode *head = NULL;
@@ -55,7 +53,7 @@ int main(void)
                 }
                 else if(equalStrings(parsed_command[1], Dir))
                 {
-                    // rm directory
+                    rm_directory(set_head, parsed_command[2]); 
                 }
                 else
                 {
@@ -76,6 +74,8 @@ int main(void)
                 else if(equalStrings(parsed_command[1], Dir))
                 {
                     printf("Editing dir name...\n"); 
+                    printf("New name for '%s' directory.\n", set_head->dirName); 
+                    set_head->dirName = getInput(); 
                 }
                 else
                 {
@@ -112,6 +112,12 @@ int main(void)
                 else
                 {
                     printf("Choose something valid.\n"); 
+                }
+                break; 
+            case CLEAR: 
+                if(equalStrings(parsed_command[1], Dir))
+                {
+                    rm_all_files(set_head); 
                 }
                 break; 
             case LS:
@@ -221,6 +227,10 @@ aCommand commandType(char *userInputString)
     {
         return EXT; 
     }
+    else if(equalStrings(userInputString, "clear"))
+    {
+        return CLEAR; 
+    }
     else if(equalStrings(userInputString, "help"))
     {
         return HELP;
@@ -293,9 +303,13 @@ void command_options(void)
 {
     printf("Enter a [command] [obj. Type] [obj. Name]\n");
     printf("Commands can include:\n");
-    printf("\tcreate, delete, edit, set, ls, and exit\n"); 
+    printf("\tcreate, delete, edit, set, ls, clear, and exit\n"); 
     printf("Obj. Types are:\n"); 
-    printf("\t'file', and 'dir'\n");  
+    printf("\t'file', and 'dir'\n");
+    printf("Some tips:"); 
+    printf("\n\t'set ..' goes up one directory."); 
+    printf("\n\t'clear dir [directory_name]' removes all files in [directory_name].");
+    printf("\n\t'ls' lists files and directories in the set directory.\n\n"); 
 }
 void add_Dir(dirNode **head, char *dirName)
 {
@@ -424,6 +438,47 @@ dirNode * back_one_directory(dirNode *head)
         return head; 
     }
     return head->prev; 
+}
+void rm_directory(dirNode *head, char *dir_name)
+{
+    if(head->next == NULL)
+    {
+        printf("Cannot delete '%s' directory, but can delete all files.\n", head->dirName); 
+        rm_all_files(head); 
+    }
+    else if(head->next != NULL && head->next->next != NULL && equalStrings(head->next->dirName, dir_name))
+    {
+        printf("Directory '%s' has been deleted.\n", head->next->dirName); 
+        rm_all_files(head->next); 
+        dirNode *temp = head->next; 
+        head->next = temp->next; 
+        temp->next->prev = head;  
+        free(temp); 
+    }
+    else if(head->next->prev != NULL && head->next->next == NULL && equalStrings(head->next->dirName, dir_name))
+    {
+        printf("Directory '%s' has been deleted.\n", head->next->dirName); 
+        rm_all_files(head->next); 
+        dirNode *temp = head->next; 
+        head->next = NULL; 
+        free(temp); 
+    }
+    else
+    {
+        printf("Can't delete directory.\n"); 
+    }
+}
+void rm_all_files(dirNode *head)
+{
+    for(int i = 0; i < MAX_FILE_AMOUNT; i++)
+    {
+        if(!(equalStrings(head->files[i].fileName, EMPTY_FILE)))
+        {
+            deleteFile(head->files[i].fileName);
+            head->files[i].fileName = EMPTY_FILE; 
+        }
+    }
+    printf("Files removed from '%s'.\n", head->dirName); 
 }
 void printDir(dirNode *head)
 {

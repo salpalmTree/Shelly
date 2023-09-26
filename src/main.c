@@ -1,4 +1,5 @@
 #include "../inc/shelly_func.h"
+#include <stdio.h>
 
 // TODO: add copy function [copy file -> file2]
 //       and [create copy file.txt]

@@ -1,4 +1,5 @@
 #include "../inc/shelly_func.h"
+
 char ** parse_command(char * line)
 {
     int buffsize = SHELLY_GL_BUFSIZE, position = 0;

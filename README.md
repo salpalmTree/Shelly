@@ -1,6 +1,6 @@
 # Shelly
 
-Shelly is a custom command line interface (CLI) that is able to manipulate files and directories. It is not meant to replace an actual CLI. The purpose for this project was to challenge myself to create something similar to a CLI implemented in C. 
+Shelly is a custom command line interface (CLI) that is able to manipulate files and emulate directories. It is not meant to replace an actual CLI. The purpose for this project was to challenge myself to create something similar to a CLI implemented in C. 
 
 # How to use Shelly
 

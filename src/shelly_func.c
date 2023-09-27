@@ -1,4 +1,6 @@
 #include "../inc/shelly_func.h"
+#include <stdio.h>
+#include <string.h>
 
 char ** parse_command(char * line)
 {
@@ -97,6 +99,10 @@ aCommand commandType(char *userInputString)
     {
         return LS;
     }
+    else if(equalStrings(userInputString, "copy"))
+    {
+        return COPY; 
+    }
     return CONT; 
 }
 FILE * createFile(char *fileName)
@@ -161,13 +167,15 @@ void command_options(void)
 {
     printf("Enter a [command] [obj. Type] [obj. Name]\n");
     printf("Commands can include:\n");
-    printf("\tcreate, delete, edit, set, ls, clear, and exit\n"); 
+    printf("\tcreate, delete, edit, set, ls, clear, copy, and exit\n"); 
     printf("Obj. Types are:\n"); 
     printf("\t'file', and 'dir'\n");
     printf("Some tips:"); 
     printf("\n\t'set ..' goes up one directory."); 
     printf("\n\t'clear dir [directory_name]' removes all files in [directory_name].");
-    printf("\n\t'ls' lists files and directories in the set directory.\n\n"); 
+    printf("\n\t'ls' lists files and directories in the set directory."); 
+    printf("\n\t'copy [file1] [file2]' copies contents of file1 into file2."); 
+    printf("\n\t'create copy [file]' creates a copy of file.\n\n"); 
 }
 void add_Dir(dirNode **head, char *dirName)
 {
@@ -337,6 +345,98 @@ void rm_all_files(dirNode *head)
         }
     }
     printf("Files removed from '%s'.\n", head->dirName); 
+}
+void copy_file_file(char *file1, char *file2)
+{
+    int c; 
+    FILE *from; 
+    FILE *to; 
+    if((to = fopen(file2, "a")) == NULL)
+    {
+        printf("Cannot open file.\n"); 
+        return; 
+    }
+    if((from = fopen(file1, "r")) == NULL)
+    {
+        printf("Cannot open file.\n"); 
+        return; 
+    }
+    fputs("\t", to); 
+    while((c = getc(from))!= EOF)
+    {
+        fputc(c, to); 
+    }
+    fclose(to); 
+    fclose(from); 
+}
+void create_copy(dirNode *head, char *file)
+{
+    FILE *original; 
+    FILE *new; 
+    bool created_file = false; 
+    int c; 
+    int i;  
+    printf("Name for new file->"); 
+    char *copied_file_name = getInput(); 
+    int file_index = find_file(head, file); 
+    if(file_index < 0)
+    {
+        printf("File not found.\n");
+        return; 
+    }
+    if((original = fopen(head->files[file_index].fileName, "r")) == NULL)
+    {
+        printf("Could not open file to copy.\n"); 
+        return; 
+    }
+    if((new = fopen(copied_file_name, "w")) == NULL)
+    {
+        printf("Could not open file to copy.\n");
+        return; 
+    }
+    while((c = getc(original)) != EOF)
+    {
+        fputc(c, new); 
+    }
+    fclose(original); 
+    fclose(new); 
+    for(i = 0; i < MAX_FILE_AMOUNT; i++)
+    {
+        if((equalStrings(head->files[i].fileName, EMPTY_FILE)))
+        {
+            head->files[i].file = new;
+            head->files[i].fileName = copied_file_name; 
+            printf("Created copy named: %s.\n", head->files[i].fileName); 
+            created_file = true; 
+            break; 
+        }
+    }
+    if((i == MAX_FILE_AMOUNT) && (created_file == false))
+    {
+        printf("List is full"); 
+        ls_Dir(head); 
+    }
+}
+void clean_up(dirNode *head, char *userInput, char **parsed_command)
+{
+    if(head == NULL)
+    {
+        printf("No directories to clean.\n"); 
+        return; 
+    }
+    printf("Cleaning up...\n"); 
+    while(head->next != NULL)
+    {
+        dirNode *temp = head; 
+        head = head->next; 
+        head->prev = NULL; 
+        rm_all_files(temp); 
+        free(temp); 
+    }
+    rm_all_files(head); 
+    free(head); 
+    free(userInput); 
+    free(parsed_command); 
 }
 void printDir(dirNode *head)
 {

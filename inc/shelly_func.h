@@ -23,6 +23,7 @@ typedef enum command {
     HELP, // help
     CLEAR, // clear all files from a directory
     LS, // list directory
+    COPY
 }aCommand; 
 
 typedef struct fileNode {
@@ -75,4 +76,12 @@ void process_command(char **userCommandIn);
 void printDir(dirNode *head);
 // remove all files from a directory
 void rm_all_files(dirNode *head); 
+// copy file into another file (appends)
+// first file is from
+// second file is to
+void copy_file_file(char *file1, char *file2); 
+// creates a copy of a file
+void create_copy(dirNode *head, char *file); 
+// clean up function
+void clean_up(dirNode *head, char *userInput, char **parse_command);
 #endif

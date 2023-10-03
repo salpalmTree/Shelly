@@ -54,4 +54,8 @@ Shelly may get changed to have it include better functionality. Here are some th
 Include something similar to `set ..` but in the other direction. Shelly (for now) only allows to nest directories, not create them side by side so having something similar to `set ..` but in the other way would be useful. 
 
 #### Added these changes to 'test_features' branch (Shelly 1.1.0)
-For commands like `set`, `read`, and `clear`, where only apply to one object type (file or directory), I would like to make typing them, a little faster by removing the need to include the object type. So for example to read a file, instead of typing `read file data.txt` change it to `read data.txt` because `read` only works with files so what's the point of needing to specify the object type. 
+The command `set` will no longer require the object type `dir`. For example: `set dir mydir` -> `set mydir`
+
+The command `read` will no longer require the object type `file`. For example: `read file my_file.txt` -> `read my_file.txt`
+
+The command `clear` will no longer require the object type `dir`. For example: `clear dir mydir` -> `clear mydir`

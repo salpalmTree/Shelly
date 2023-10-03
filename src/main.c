@@ -122,42 +122,34 @@ int main(void)
                     }
                     break; 
                 case SET:
-                    if(equalStrings(parsed_command[1], Dir))
-                    {
-                        if(!(set_head = lookup_Dir(head, parsed_command[2])))
-                        {
-                            printf("Directory doesn't exist.\n"); 
-                        }
-                        else
-                        {
-                            printf("Directory '%s' set\n", set_head->dirName);  
-                        }
-                    }
-                    else if(equalStrings(parsed_command[1], ".."))
+                    // the 'dir' in 'set dir mydir' is no longer needed
+                    if(equalStrings(parsed_command[1], ".."))
                     {
                         set_head = back_one_directory(set_head); 
                     }
+                    else if((set_head = lookup_Dir(head, parsed_command[1])))
+                    {
+                        printf("Directory '%s' set\n", set_head->dirName);  
+                    }
+                    else
+                    {
+                        printf("Directory doesn't exist.\n"); 
+                    }
                     break; 
                 case READ:
+                    // 'file' in 'read file data.txt' no longer needed
                     if(!set_head)
                     {
                         printf("Directory not set.\n");
                     }
                     else
                     {
-                        if(equalStrings(parsed_command[1], File))
+                        int8_t valid_file = find_file(set_head, parsed_command[1]); 
+                        if(valid_file >= 0)
                         {
-                            int8_t valid_file = find_file(set_head, parsed_command[2]); 
-                            if(valid_file >= 0)
-                            {
-                                readFile(set_head->files[valid_file].fileName); 
-                            }
-                            else { printf("File '%s' not found.\n", parsed_command[2]); }
+                            readFile(set_head->files[valid_file].fileName); 
                         }
-                        else
-                        {
-                            printf("Choose something valid.\n"); 
-                        }
+                        else { printf("File '%s' not found.\n", parsed_command[1]); }
                     }
                     break; 
                 case COPY: 
@@ -176,16 +168,14 @@ int main(void)
                     }
                     break; 
                 case CLEAR: 
+                    // 'dir' in 'clear dir mydir' no longer needed
                     if(!set_head)
                     {
                         printf("Directory not set.\n");
                     }
                     else
                     {
-                        if(equalStrings(parsed_command[1], Dir))
-                        {
-                            rm_all_files(set_head); 
-                        }
+                        rm_all_files(set_head); 
                     }
                     break; 
                 case LS:

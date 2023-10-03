@@ -171,8 +171,9 @@ void command_options(void)
     printf("Obj. Types are:\n"); 
     printf("\t'file', and 'dir'\n");
     printf("Some tips:"); 
+    printf("\nShelly 1.1.0 changes the 'set' 'read' and 'clear' commands, they no longer need the object type. (file, dir)"); 
     printf("\n\t'set ..' goes up one directory."); 
-    printf("\n\t'clear dir [directory_name]' removes all files in [directory_name].");
+    printf("\n\t'clear [directory_name]' removes all files in [directory_name].");
     printf("\n\t'ls' lists files and directories in the set directory."); 
     printf("\n\t'copy [file1] [file2]' copies contents of file1 into file2."); 
     printf("\n\t'create copy [file]' creates a copy of file.\n\n"); 
